@@ -9,10 +9,15 @@ class TypeEnum(Enum):
     NAMEDTUPLE = 1
 
 
-class DataHelper:
-    """
+class ConditionEnum(Enum):
+    EQUAL = '='
+    GREATER = '>'
+    GREATER_EQUAL = '>='
+    LESSER = '<'
+    LESSER_EQUAL = '<='
 
-    """
+
+class DataHelper:
     def __init__(self, source=None):
         super()
         self._data_source = source
@@ -45,6 +50,7 @@ class JsonHelper(DataHelper):
 
     def read_data(self, type_=TypeEnum.DICTIONARY):
         """Read data from target file and parse to python readable data
+        :param type_: Convert data from json into pre-defined type
         :return:
         """
         try:
@@ -64,22 +70,26 @@ class JsonHelper(DataHelper):
         return results
 
     def write_data(self, target):
+        """Cast all properties of data into string format
+        Then write it to target json file
+        :param target: input data
+        :return:
+        """
         list_ = self.read_data()
         try:
             source_ = open(self._data_source, mode='w')
         except FileExistsError:
-            raise FileExistsError
+            raise FileExistsErrork
         except FileNotFoundError:
             raise FileNotFoundError
-        target_ = dict(zip(self._headers, target))
-        print(target_)
+        target_ = dict(zip(self._headers, [str(item) for item in target]))
         list_.append(target_)
         json.dump(list_, source_, indent=4)
+        return target_
 
     def apply_schema(self, target_unit):
-        """
-        Apply data schema for target obj (only for flatten data)
-        :param target_unit:
+        """Apply data schema for target obj (only for flatten data)
+        :param target_unit: Object on casting mode to fit the schema
         :return:
         """
         def cast_dict(unit, prop_name, prop_value, prop_type, metadata=None):
@@ -87,7 +97,6 @@ class JsonHelper(DataHelper):
                 unit[prop_name] = str(prop_value)
             elif prop_type == "integer":
                 unit[prop_name] = int(prop_value)
-                print(unit)
             elif prop_type == "float":
                 unit[prop_name] = float(prop_value)
             elif prop_type == "date":
@@ -99,7 +108,6 @@ class JsonHelper(DataHelper):
                 unit._replace(**{prop_name: str(prop_value)})
             elif prop_type == "integer":
                 unit._replace(**{prop_name: int(prop_value)})
-                print(unit)
             elif prop_type == "float":
                 unit._replace(**{prop_name: float(prop_value)})
             elif prop_type == "date":
@@ -127,3 +135,28 @@ class JsonHelper(DataHelper):
                 raise ValueError
         for field in self._schema['fields']:
             cast_type(field, target_unit)
+
+    @staticmethod
+    def filter_data(target, field_name, keyword=None, mode_list=None):
+        """ Help to filter data with user's input conditions
+        :param target: Input list objects
+        :param field_name: Selected field to filter
+        :param keyword: Keyword to filter on specific field
+        :param mode_list: Mode condition for range filter
+        :return:
+        """
+        if mode_list is None:
+            target = [item for item in target if keyword in getattr(item, field_name)]
+        else:
+            for item in mode_list:
+                if item['mode'] == ConditionEnum.EQUAL.value:
+                    target = [i for i in target if float(getattr(i, field_name)) == item['value']]
+                elif item['mode'] == ConditionEnum.LESSER.value:
+                    target = [i for i in target if float(getattr(i, field_name)) < item['value']]
+                elif item['mode'] == ConditionEnum.LESSER_EQUAL.value:
+                    target = [i for i in target if float(getattr(i, field_name)) <= item['value']]
+                elif item['mode'] == ConditionEnum.GREATER.value:
+                    target = [i for i in target if float(getattr(i, field_name)) > item['value']]
+                elif item['mode'] == ConditionEnum.GREATER_EQUAL.value:
+                    target = [i for i in target if float(getattr(i, field_name)) >= item['value']]
+        return target

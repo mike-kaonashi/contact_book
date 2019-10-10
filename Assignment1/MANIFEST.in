@@ -1,0 +1,3 @@
+include contactbook/schema/*.schema
+include contactbook/storages/*.json
+include contactbook/utils/config/app-config.yml

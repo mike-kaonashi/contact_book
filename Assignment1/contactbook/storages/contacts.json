@@ -25,13 +25,6 @@
         "phone": "0728495827",
         "company": "VNG",
         "address": "Bui Vien",
-        "age": 24
-    },
-    {
-        "name": "Kiet",
-        "phone": "0728495827",
-        "company": "VNG",
-        "address": "Bui Vien",
-        "age": 24
+        "age": "24"
     }
 ]

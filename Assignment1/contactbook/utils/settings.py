@@ -1,7 +1,7 @@
 import yaml
 import os
 
-global config
+config = None
 _static_path = 'config/app-config.yml'
 _config_path = os.path.join(os.path.dirname(__file__), _static_path)
 try:
