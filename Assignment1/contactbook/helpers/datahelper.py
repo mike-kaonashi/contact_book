@@ -54,17 +54,27 @@ class JsonHelper(DataHelper):
         except FileNotFoundError:
             raise FileNotFoundError
         results = json.load(source_)
+        source_.close()
         if type_ is TypeEnum.DICTIONARY:
             # Nothing change
             pass
         elif type_ is TypeEnum.NAMEDTUPLE:
             Object = collections.namedtuple('Object', self._headers)
             results = [Object._make(item.values()) for item in results]
-
         return results
 
     def write_data(self, target):
-        ...
+        list_ = self.read_data()
+        try:
+            source_ = open(self._data_source, mode='w')
+        except FileExistsError:
+            raise FileExistsError
+        except FileNotFoundError:
+            raise FileNotFoundError
+        target_ = dict(zip(self._headers, target))
+        print(target_)
+        list_.append(target_)
+        json.dump(list_, source_, indent=4)
 
     def apply_schema(self, target_unit):
         """
