@@ -1,5 +1,5 @@
-import yaml
 import os
+import yaml
 
 config = None
 _static_path = 'config/app-config.yml'

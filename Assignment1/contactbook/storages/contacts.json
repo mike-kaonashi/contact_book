@@ -26,5 +26,12 @@
         "company": "VNG",
         "address": "Bui Vien",
         "age": "24"
+    },
+    {
+        "name": "Hieu",
+        "phone": "0128493281",
+        "company": "Global",
+        "address": "Phu Yen",
+        "age": "27"
     }
 ]

@@ -13,8 +13,6 @@ def add(*args):
 
 def list():
     results = helper.read_data(type_=TypeEnum.NAMEDTUPLE)
-    for item in results:
-        helper.apply_schema(item)
     return results
 
 

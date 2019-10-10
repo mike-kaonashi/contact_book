@@ -20,9 +20,6 @@ setup(
     ],
     include_package_data=True,
     data_files=[
-        # ('utils', [
-        #     ('config', ['contactbook/utils/config/app-config.yml'])]
-        # ),
         ('config', ['contactbook/utils/config/app-config.yml']),
         ('schema', ['contactbook/schema/contact.schema']),
         ('storages', ['contactbook/storages/contacts.json'])

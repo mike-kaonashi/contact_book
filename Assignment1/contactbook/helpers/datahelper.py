@@ -62,11 +62,10 @@ class JsonHelper(DataHelper):
         results = json.load(source_)
         source_.close()
         if type_ is TypeEnum.DICTIONARY:
-            # Nothing change
-            pass
+            results = [self.apply_schema(item) for item in results]
         elif type_ is TypeEnum.NAMEDTUPLE:
             Object = collections.namedtuple('Object', self._headers)
-            results = [Object._make(item.values()) for item in results]
+            results = [self.apply_schema(Object._make(item.values())) for item in results]
         return results
 
     def write_data(self, target):
@@ -79,7 +78,7 @@ class JsonHelper(DataHelper):
         try:
             source_ = open(self._data_source, mode='w')
         except FileExistsError:
-            raise FileExistsErrork
+            raise FileExistsError
         except FileNotFoundError:
             raise FileNotFoundError
         target_ = dict(zip(self._headers, [str(item) for item in target]))
@@ -105,14 +104,15 @@ class JsonHelper(DataHelper):
 
         def cast_tuple(unit, prop_name, prop_value, prop_type,metadata=None):
             if prop_type == "string":
-                unit._replace(**{prop_name: str(prop_value)})
+                unit = unit._replace(**{prop_name: str(prop_value)})
             elif prop_type == "integer":
-                unit._replace(**{prop_name: int(prop_value)})
+                unit = unit._replace(**{prop_name: int(prop_value)})
             elif prop_type == "float":
-                unit._replace(**{prop_name: float(prop_value)})
+                unit = unit._replace(**{prop_name: float(prop_value)})
             elif prop_type == "date":
                 date_format = metadata['date_format']
-                unit._replace(**{prop_name: datetime.datetime.strptime(prop_value, date_format)})
+                unit = unit._replace(**{prop_name: datetime.datetime.strptime(prop_value, date_format)})
+            return unit
 
         def cast_type(field_props, unit):
             current_value = None
@@ -129,12 +129,13 @@ class JsonHelper(DataHelper):
                 if isinstance(unit, dict):
                     cast_dict(unit, current_name, current_value, current_type, field_props['metadata'])
                 elif isinstance(unit, tuple):
-                    cast_tuple(unit, current_name, current_value, current_type, field_props['metadata'])
-
+                    unit = cast_tuple(unit, current_name, current_value, current_type, field_props['metadata'])
             except ValueError:
                 raise ValueError
+            return unit
         for field in self._schema['fields']:
-            cast_type(field, target_unit)
+            target_unit = cast_type(field, target_unit)
+        return target_unit
 
     @staticmethod
     def filter_data(target, field_name, keyword=None, mode_list=None):
@@ -150,13 +151,13 @@ class JsonHelper(DataHelper):
         else:
             for item in mode_list:
                 if item['mode'] == ConditionEnum.EQUAL.value:
-                    target = [i for i in target if float(getattr(i, field_name)) == item['value']]
+                    target = [i for i in target if getattr(i, field_name) == item['value']]
                 elif item['mode'] == ConditionEnum.LESSER.value:
-                    target = [i for i in target if float(getattr(i, field_name)) < item['value']]
+                    target = [i for i in target if getattr(i, field_name) < item['value']]
                 elif item['mode'] == ConditionEnum.LESSER_EQUAL.value:
-                    target = [i for i in target if float(getattr(i, field_name)) <= item['value']]
+                    target = [i for i in target if getattr(i, field_name) <= item['value']]
                 elif item['mode'] == ConditionEnum.GREATER.value:
-                    target = [i for i in target if float(getattr(i, field_name)) > item['value']]
+                    target = [i for i in target if getattr(i, field_name) > item['value']]
                 elif item['mode'] == ConditionEnum.GREATER_EQUAL.value:
-                    target = [i for i in target if float(getattr(i, field_name)) >= item['value']]
+                    target = [i for i in target if getattr(i, field_name) >= item['value']]
         return target
