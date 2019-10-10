@@ -1,0 +1,3 @@
+data:
+  file_path: ./storages/contacts.json
+  schema_path: ./schema/contact.schema

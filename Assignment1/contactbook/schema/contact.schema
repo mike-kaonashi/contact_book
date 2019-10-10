@@ -1,0 +1,34 @@
+{
+    "fields": [
+        {
+            "name": "Name",
+            "nullable": false,
+            "metadata": {},
+            "type": "string"
+        },
+        {
+            "name": "Phone",
+            "nullable": false,
+            "metadata": {},
+            "type": "string"
+        },
+        {
+            "name": "Company",
+            "nullable": false,
+            "metadata": {},
+            "type": "string"
+        },
+        {
+            "name": "Address",
+            "nullable": false,
+            "metadata": {},
+            "type": "string"
+        },
+        {
+            "name": "Age",
+            "nullable": false,
+            "metadata": {},
+            "type": "integer"
+        }
+    ]
+}
