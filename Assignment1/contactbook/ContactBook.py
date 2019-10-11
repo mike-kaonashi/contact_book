@@ -4,6 +4,10 @@ from .helpers.datahelper import JsonHelper, TypeEnum, ConditionEnum
 
 DATA_PATH = os.path.join(os.path.dirname(__file__), config['data']['file_path'])
 SCHEMA_PATH = os.path.join(os.path.dirname(__file__), config['data']['schema_path'])
+if config['data']['output_format'] == 'namedtuple':
+    OUTPUT_FORMAT = TypeEnum.NAMEDTUPLE
+elif config['data']['output_format'] == 'dictionary':
+    OUTPUT_FORMAT = TypeEnum.DICTIONARY
 helper = JsonHelper(source=DATA_PATH, schema=SCHEMA_PATH)
 
 
@@ -12,13 +16,16 @@ def add(*args):
 
 
 def list():
-    results = helper.read_data(type_=TypeEnum.NAMEDTUPLE)
+    results = helper.read_data(type_=OUTPUT_FORMAT)
     return results
 
 
 def search(field=None, param=None):
     list_ = list()
-    return helper.filter_data(list_, field, keyword=param, mode_list=None)
+    return helper.filter_data(list_, field,
+                              keyword=param,
+                              mode_list=None,
+                              output_format=OUTPUT_FORMAT)
 
 
 def age_filter(age=None, age_gt=None, age_gte=None, age_lt=None, age_lte=None):
@@ -49,4 +56,7 @@ def age_filter(age=None, age_gt=None, age_gte=None, age_lt=None, age_lte=None):
             'mode': '<',
             'value': age_lt
         })
-    return helper.filter_data(list_, 'age', keyword=None, mode_list=mode_list)
+    return helper.filter_data(list_, 'age',
+                              keyword=None,
+                              mode_list=mode_list,
+                              output_format=OUTPUT_FORMAT)
