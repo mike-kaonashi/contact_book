@@ -28,8 +28,14 @@ class NullFilterConditionError(Exception):
     pass
 
 
-class TypeNotSupportedException(Exception):
+class TypeNotSupportedError(Exception):
     """Type not in our supported list
+    """
+    pass
+
+
+class NotAvailableValueError(Exception):
+    """Data constraints not include negative number or double/float
     """
     pass
 
@@ -37,6 +43,7 @@ class TypeNotSupportedException(Exception):
 class TypeEnum(Enum):
     DICTIONARY = 0
     NAMEDTUPLE = 1
+    DATAFRAME = 2
 
 
 class ConditionEnum(Enum):
@@ -197,6 +204,10 @@ class JsonHelper(DataHelper):
             raise NullFilterConditionError
         else:
             for item in mode_list:
+                if not isinstance(item['value'], int):
+                    raise NotAvailableValueError
+                if item['value'] < 0:
+                    raise NotAvailableValueError
                 if item['mode'] == ConditionEnum.EQUAL.value:
                     target = [i for i in target if get_attr_with_format(i, field_name, output_format) == item['value']]
                 elif item['mode'] == ConditionEnum.LESSER.value:

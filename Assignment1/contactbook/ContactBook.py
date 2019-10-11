@@ -1,13 +1,9 @@
 import os
-from .utils.settings import config
-from .helpers.datahelper import JsonHelper, TypeEnum, ConditionEnum
-
-DATA_PATH = os.path.join(os.path.dirname(__file__), config['data']['file_path'])
-SCHEMA_PATH = os.path.join(os.path.dirname(__file__), config['data']['schema_path'])
-if config['data']['output_format'] == 'namedtuple':
-    OUTPUT_FORMAT = TypeEnum.NAMEDTUPLE
-elif config['data']['output_format'] == 'dictionary':
-    OUTPUT_FORMAT = TypeEnum.DICTIONARY
+try:
+    from .helpers.datahelper import JsonHelper, ConditionEnum
+except ModuleNotFoundError:
+    from helpers.datahelper import JsonHelper, ConditionEnum
+from contactbook import SCHEMA_PATH, DATA_PATH, OUTPUT_FORMAT
 helper = JsonHelper(source=DATA_PATH, schema=SCHEMA_PATH)
 
 
