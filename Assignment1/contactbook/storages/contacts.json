@@ -60,6 +60,20 @@
         "phone": "0123456789",
         "company": "KMS",
         "address": "HCM city",
-        "age": "23"
+        "age": 23
+    },
+    {
+        "name": "Hung",
+        "phone": "0283918293",
+        "company": "KMS",
+        "address": "HN",
+        "age": 24
+    },
+    {
+        "name": "Hung",
+        "phone": "0283918293",
+        "company": "KMS",
+        "address": "HN",
+        "age": "24"
     }
 ]
