@@ -53,7 +53,7 @@ def age_filter(age=None, age_gt=None, age_gte=None, age_lt=None, age_lte=None):
                               output_format=OUTPUT_FORMAT)
 
 
-print(add('Hung', '0283918293', 'KMS', 'HN', 24))
-print(list())
-print(search('name', 'i'))
-print(age_filter(age=23))
+# print(add('Mai', '0283918293', 'KMS', 'HN', 24))
+# print(list())
+# print(search('name', 'i'))
+# print(age_filter(age=23))

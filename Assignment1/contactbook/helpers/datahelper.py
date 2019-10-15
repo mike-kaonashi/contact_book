@@ -23,6 +23,7 @@ logging.basicConfig(filename=_log_path, filemode='a', level=logging.INFO,
 class TypeEnum(Enum):
     DICTIONARY = 0
     NAMEDTUPLE = 1
+    NOTDEFINED = -1
 
 
 class ConditionEnum(Enum):
@@ -89,6 +90,7 @@ class JsonHelper(DataHelper):
             elif type_.value == TypeEnum.NAMEDTUPLE.value:
                 Object = collections.namedtuple('Object', self._headers)
                 results = [self.apply_schema(Object._make(item.values())) for item in results]
+
         except Exception:
             msg = 'The data does not fit with the pre-defined schema.'
             logging.error('Data does not fit the schema.')
@@ -103,21 +105,21 @@ class JsonHelper(DataHelper):
         :param target: input data
         :return:
         """
-        list_ = self.read_data()
+        list_ = self.read_data(type_=TypeEnum.NOTDEFINED)
         logging.info('Start writing data to the file...')
         if len(self._headers) != len(target):
             msg = 'The data does not fit the schema.'
             logging.error(msg)
             raise exceptions.NotFitSchemaError(msg)
         else:
+            target_ = dict(zip(self._headers, [str(item) for item in target]))
+            list_.append(target_)
             try:
                 source_ = open(self._data_source, mode='w')
             except (FileExistsError, FileNotFoundError):
-                msg = 'The file does not exist.'
+                msg = 'The file does not exist or not found'
                 logging.error(msg)
                 raise FileNotAvailableException(msg)
-            target_ = dict(zip(self._headers, [str(item) for item in target]))
-            list_.append(target_)
             json.dump(list_, source_, indent=4)
             source_.close()
         logging.info('Done writing data to the file.')
@@ -200,8 +202,8 @@ class JsonHelper(DataHelper):
             target = [item for item in target if keyword in get_attr_with_format(item, field_name, output_format)]
         elif len(mode_list) == 0:
             msg = 'Nothing to filter.'
-            logging.error(msg)
-            raise exceptions.NullFilterConditionError(msg)
+            logging.warning(msg)
+            return None
         else:
             for item in mode_list:
                 if not isinstance(item['value'], int):

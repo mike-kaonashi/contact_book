@@ -1,10 +1,11 @@
 import unittest
+from unittest.mock import Mock, MagicMock
 from contactbook import ContactBook
 from contactbook.helpers.datahelper import TypeEnum
-from contactbook.helpers.datahelper \
-    import FileNotAvailableError, NotInJsonFormatError, \
+from contactbook.errors.exceptions \
+    import NotAvailableFileError, NotInJsonFormatError, \
     NotFitSchemaError, NullFilterConditionError, \
-    TypeNotSupportedError, NotAvailableValueError
+    NotSupportedTypeError, NotAvailableValueError
 
 
 class TestCreateFunction(unittest.TestCase):
@@ -19,26 +20,25 @@ class TestCreateFunction(unittest.TestCase):
         ...
 
     def test_add_perfect(self):
-        self.assertEqual(
-            ContactBook.add('David', '0123456789', 'KMS', 'HCM city', 23),
-            {
-                'name': 'David',
-                'phone': '0123456789',
-                'company': 'KMS',
-                'address': 'HCM city',
-                'age': '23'
-            }
-        )
+        agent = ContactBook
+        actual_obj = ('Test', '0123456789', 'KMS', 'HCM', 23)
+        expect_obj = {'name': 'Test', 'phone': '0123456789', 'company': 'KMS', 'address': 'HCM', 'age': '23'}
+        #
+        # agent.add = MagicMock(return_value=expect_obj)
+        # agent.add(*actual_obj)
 
+        self.assertEqual(agent.add(*actual_obj), expect_obj)
+        print('ok')
 
 class TestGetFunction(unittest.TestCase):
     def test_list_perfect(self):
         ...
+        # self.assertCountEqual()
 
 
 class TestFilterFunction(unittest.TestCase):
     def test_none_params(self):
-        ...
+        self.assertIsNone(ContactBook.age_filter())
 
     def test_age_not_number_format(self):
         with self.assertRaises(NotAvailableValueError):
@@ -52,8 +52,6 @@ class TestFilterFunction(unittest.TestCase):
         with self.assertRaises(NotAvailableValueError):
             ContactBook.age_filter(age_gte=5.9)
 
-    def test_lack_of_params(self):
-        ...
-
     def test_filter_perfect(self):
         ...
+        # self.assertCountEqual()
