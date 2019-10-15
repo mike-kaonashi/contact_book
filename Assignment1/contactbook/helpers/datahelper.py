@@ -13,10 +13,12 @@ except ModuleNotFoundError:
 
 _now = datetime.datetime.now()
 _today = datetime.datetime(_now.year, _now.month, _now.day)
-_log_file = 'logs/{today}_record.log'.format(today=int(time.mktime(_today.timetuple())))
-_root_dir = os.path.dirname(sys.modules['__main__'].__file__)
+_log_file = '{today}_record.log'.format(today=int(time.mktime(_today.timetuple())))
+_root_dir = os.path.join(os.path.dirname(sys.modules['__main__'].__file__), 'logs')
 _log_path = os.path.join(_root_dir, _log_file)
-logging.basicConfig(filename=_log_path, filemode='a', level=logging.INFO,
+if not os.path.exists(_root_dir):
+    os.makedirs(_root_dir)
+logging.basicConfig(filename=_log_path, filemode='a+', level=logging.INFO,
                     format='%(asctime)s-%(levelname)s %(filename)s:%(lineno)s  %(message)s')
 
 
@@ -40,11 +42,11 @@ class DataHelper:
         self._data_source = source
 
     def read_data(self, type_):
-        msg = _('.read_data() need to be override')
+        msg = '.read_data() need to be override'
         raise NotImplementedError(msg)
 
     def write_data(self, target):
-        msg = _('.write_data() need to be override')
+        msg = '.write_data() need to be override'
         raise NotImplementedError(msg)
 
 
@@ -119,7 +121,7 @@ class JsonHelper(DataHelper):
             except (FileExistsError, FileNotFoundError):
                 msg = 'The file does not exist or not found'
                 logging.error(msg)
-                raise FileNotAvailableException(msg)
+                raise exceptions.NotAvailableFileError(msg)
             json.dump(list_, source_, indent=4)
             source_.close()
         logging.info('Done writing data to the file.')

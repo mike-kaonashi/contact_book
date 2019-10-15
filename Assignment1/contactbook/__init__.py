@@ -1,7 +1,7 @@
 """Contactbook global variables
 """
 import os
-
+import sys
 try:
     from .utils.settings import config
     from .helpers.datahelper import TypeEnum, JsonHelper, ConditionEnum
@@ -11,6 +11,8 @@ except ModuleNotFoundError:
     from helpers.datahelper import TypeEnum
     from errors import exceptions
 
+    
+sys.path.append(os.path.dirname(os.path.realpath(__file__)))
 DATA_PATH = os.path.join(os.path.dirname(__file__), config['data']['file_path'])
 SCHEMA_PATH = os.path.join(os.path.dirname(__file__), config['data']['schema_path'])
 helper = JsonHelper(source=DATA_PATH, schema=SCHEMA_PATH)

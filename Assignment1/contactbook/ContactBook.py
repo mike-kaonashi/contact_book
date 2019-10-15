@@ -1,5 +1,8 @@
 import os
-from contactbook import SCHEMA_PATH, DATA_PATH, OUTPUT_FORMAT, helper
+try:
+    from . import SCHEMA_PATH, DATA_PATH, OUTPUT_FORMAT, helper
+except ModuleNotFoundError:
+    from contactbook import SCHEMA_PATH, DATA_PATH, OUTPUT_FORMAT, helper
 
 
 def add(*args):
@@ -52,8 +55,3 @@ def age_filter(age=None, age_gt=None, age_gte=None, age_lt=None, age_lte=None):
                               mode_list=mode_list,
                               output_format=OUTPUT_FORMAT)
 
-
-# print(add('Mai', '0283918293', 'KMS', 'HN', 24))
-# print(list())
-# print(search('name', 'i'))
-# print(age_filter(age=23))
