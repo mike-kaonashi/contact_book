@@ -1,8 +1,8 @@
 import os
 try:
-    from . import SCHEMA_PATH, DATA_PATH, OUTPUT_FORMAT, helper
-except ModuleNotFoundError:
     from contactbook import SCHEMA_PATH, DATA_PATH, OUTPUT_FORMAT, helper
+except ModuleNotFoundError:
+    from . import SCHEMA_PATH, DATA_PATH, OUTPUT_FORMAT, helper
 
 
 def add(*args):
@@ -18,8 +18,7 @@ def search(field=None, param=None):
     list_ = list()
     return helper.filter_data(list_, field,
                               keyword=param,
-                              mode_list=None,
-                              output_format=OUTPUT_FORMAT)
+                              mode_list=None)
 
 
 def age_filter(age=None, age_gt=None, age_gte=None, age_lt=None, age_lte=None):
@@ -52,6 +51,4 @@ def age_filter(age=None, age_gt=None, age_gte=None, age_lt=None, age_lte=None):
         })
     return helper.filter_data(list_, 'age',
                               keyword=None,
-                              mode_list=mode_list,
-                              output_format=OUTPUT_FORMAT)
-
+                              mode_list=mode_list)

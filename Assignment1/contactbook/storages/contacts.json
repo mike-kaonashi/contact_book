@@ -49,31 +49,17 @@
         "age": "24"
     },
     {
-        "name": "Test",
-        "phone": "0123456789",
-        "company": "KMS",
-        "address": "HCM",
-        "age": "23"
+        "name": "1",
+        "phone": "1",
+        "company": "1",
+        "address": "1",
+        "age": "1"
     },
     {
-        "name": "Test",
-        "phone": "0123456789",
-        "company": "KMS",
-        "address": "HCM",
-        "age": "23"
-    },
-    {
-        "name": "Test",
-        "phone": "0123456789",
-        "company": "KMS",
-        "address": "HCM",
-        "age": "23"
-    },
-    {
-        "name": "Test",
-        "phone": "0123456789",
-        "company": "KMS",
-        "address": "HCM",
-        "age": "23"
+        "name": "1",
+        "phone": "1",
+        "company": "1",
+        "address": "1",
+        "age": "1"
     }
 ]

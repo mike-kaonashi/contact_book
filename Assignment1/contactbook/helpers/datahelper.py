@@ -8,8 +8,10 @@ import collections
 from enum import Enum
 try:
     from errors import exceptions
+    from validator import Validator
 except ModuleNotFoundError:
     from ..errors import exceptions
+    from .validator import Validator
 
 _now = datetime.datetime.now()
 _today = datetime.datetime(_now.year, _now.month, _now.day)
@@ -40,6 +42,7 @@ class DataHelper:
     def __init__(self, source=None):
         super()
         self._data_source = source
+        self.validator = Validator()
 
     def read_data(self, type_):
         msg = '.read_data() need to be override'
@@ -114,8 +117,14 @@ class JsonHelper(DataHelper):
             logging.error(msg)
             raise exceptions.NotFitSchemaError(msg)
         else:
-            target_ = dict(zip(self._headers, [str(item) for item in target]))
-            list_.append(target_)
+            tmp = dict(zip(self._headers, [item for item in target]))
+            if self.validator.check_obj_by_schema(tmp, self._schema):
+                target_ = dict(zip(self._headers, [str(item) for item in target]))
+                list_.append(target_)
+            else:
+                msg = 'The data does not fit the schema.'
+                logging.error(msg)
+                raise exceptions.NotFitSchemaError(msg)
             try:
                 source_ = open(self._data_source, mode='w')
             except (FileExistsError, FileNotFoundError):
@@ -133,6 +142,8 @@ class JsonHelper(DataHelper):
         :return:
         """
         def cast_dict(unit, prop_name, prop_value, prop_type, metadata=None):
+            """Cast properties of the dictionary unit fit the schema
+            """
             if prop_type == "string":
                 unit[prop_name] = str(prop_value)
             elif prop_type == "integer":
@@ -144,6 +155,8 @@ class JsonHelper(DataHelper):
                 unit[prop_name] = datetime.datetime.strptime(prop_value, date_format)
 
         def cast_tuple(unit, prop_name, prop_value, prop_type, metadata=None):
+            """Cast properties of the namedtuple unit fit the schema
+            """
             if prop_type == "string":
                 unit = unit._replace(**{prop_name: str(prop_value)})
             elif prop_type == "integer":
@@ -156,16 +169,7 @@ class JsonHelper(DataHelper):
             return unit
 
         def cast_type(field_props, unit):
-            current_value = None
-            if isinstance(unit, dict):
-                current_value = unit[field_props['name'].lower()]
-            elif isinstance(unit, tuple):
-                current_value = getattr(unit, field_props['name'].lower())
-            if field_props['nullable'] is False \
-                    and current_value is None:
-                msg = 'Field property must be not null.'
-                logging.error(msg)
-                raise TypeError(msg)
+            current_value = self.validator.get_attr_with_format(unit, field_props['name'].lower())
             try:
                 current_type = field_props['type']
                 current_name = field_props['name'].lower()
@@ -182,26 +186,17 @@ class JsonHelper(DataHelper):
             target_unit = cast_type(field, target_unit)
         return target_unit
 
-    @staticmethod
-    def filter_data(target, field_name, keyword=None, mode_list=None, output_format=None):
+    def filter_data(self, target, field_name, keyword=None, mode_list=None):
         """ Help to filter data with user's input conditions
         :param target: Input list objects
         :param field_name: Selected field to filter
         :param keyword: Keyword to filter on specific field
         :param mode_list: Mode condition for range filter
-        :param output_format: Format of output data
         :return:
         """
         logging.info('Start filtering data...')
-
-        def get_attr_with_format(item, field, format_):
-            if format_.value == TypeEnum.DICTIONARY.value:
-                return item[field]
-            elif format_.value == TypeEnum.NAMEDTUPLE.value:
-                return getattr(item, field)
-
         if mode_list is None:
-            target = [item for item in target if keyword in get_attr_with_format(item, field_name, output_format)]
+            target = [item for item in target if keyword in self.validator.get_attr_with_format(item, field_name)]
         elif len(mode_list) == 0:
             msg = 'Nothing to filter.'
             logging.warning(msg)
@@ -217,14 +212,14 @@ class JsonHelper(DataHelper):
                     logging.error(msg)
                     raise exceptions.NotAvailableValueError(msg)
                 if item['mode'] == ConditionEnum.EQUAL.value:
-                    target = [i for i in target if get_attr_with_format(i, field_name, output_format) == item['value']]
+                    target = [i for i in target if self.validator.get_attr_with_format(i, field_name) == item['value']]
                 elif item['mode'] == ConditionEnum.LESSER.value:
-                    target = [i for i in target if get_attr_with_format(i, field_name, output_format) < item['value']]
+                    target = [i for i in target if self.validator.get_attr_with_format(i, field_name) < item['value']]
                 elif item['mode'] == ConditionEnum.LESSER_EQUAL.value:
-                    target = [i for i in target if get_attr_with_format(i, field_name, output_format) <= item['value']]
+                    target = [i for i in target if self.validator.get_attr_with_format(i, field_name) <= item['value']]
                 elif item['mode'] == ConditionEnum.GREATER.value:
-                    target = [i for i in target if get_attr_with_format(i, field_name, output_format) > item['value']]
+                    target = [i for i in target if self.validator.get_attr_with_format(i, field_name) > item['value']]
                 elif item['mode'] == ConditionEnum.GREATER_EQUAL.value:
-                    target = [i for i in target if get_attr_with_format(i, field_name, output_format) >= item['value']]
+                    target = [i for i in target if self.validator.get_attr_with_format(i, field_name) >= item['value']]
         logging.info('Done filtering data.')
         return target

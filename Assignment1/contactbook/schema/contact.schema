@@ -27,7 +27,9 @@
         {
             "name": "Age",
             "nullable": false,
-            "metadata": {},
+            "metadata": {
+                "min": 0
+            },
             "type": "integer"
         }
     ]
