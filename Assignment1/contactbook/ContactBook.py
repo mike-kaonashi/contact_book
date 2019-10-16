@@ -14,7 +14,7 @@ def list():
     return results
 
 
-def search(field=None, param=None):
+def search(field, param):
     list_ = list()
     return helper.filter_data(list_, field,
                               keyword=param,

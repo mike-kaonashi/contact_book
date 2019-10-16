@@ -27,6 +27,10 @@ class NotSupportedTypeError(Exception):
     """
     pass
 
+class NotExistFieldNameError(Exception):
+    """Field name does not exist in the headers
+    """
+    pass
 
 class NotAvailableValueError(Exception):
     """Data constraints not include negative number or double/float

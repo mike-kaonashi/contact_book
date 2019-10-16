@@ -195,6 +195,10 @@ class JsonHelper(DataHelper):
         :return:
         """
         logging.info('Start filtering data...')
+        if field_name not in self._headers:
+            msg = "Field name does not exist in the headers"
+            logging.error(msg)
+            raise exceptions.NotExistFieldNameError(msg)
         if mode_list is None:
             target = [item for item in target if keyword in self.validator.get_attr_with_format(item, field_name)]
         elif len(mode_list) == 0:
