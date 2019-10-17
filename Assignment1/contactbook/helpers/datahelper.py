@@ -65,7 +65,9 @@ class JsonHelper(DataHelper):
                 raw_ = open(schema, 'r')
                 self._schema = json.loads(raw_.read())
             except (FileExistsError, FileNotFoundError):
-                raise exceptions.NotAvailableFileError
+                msg = 'File does not exist or not found'
+                logging.error(msg)
+                raise exceptions.NotAvailableFileError(msg)
 
     @property
     def _headers(self):
@@ -100,8 +102,8 @@ class JsonHelper(DataHelper):
             msg = 'The data does not fit with the pre-defined schema.'
             logging.error('Data does not fit the schema.')
             raise exceptions.NotFitSchemaError(msg)
-        logging.info('Done reading data.')
         source_.close()
+        logging.info('Done reading data.')
         return results
 
     def write_data(self, target):
@@ -127,12 +129,12 @@ class JsonHelper(DataHelper):
                 raise exceptions.NotFitSchemaError(msg)
             try:
                 source_ = open(self._data_source, mode='w')
+                json.dump(list_, source_, indent=4)
+                source_.close()
             except (FileExistsError, FileNotFoundError):
                 msg = 'The file does not exist or not found'
                 logging.error(msg)
                 raise exceptions.NotAvailableFileError(msg)
-            json.dump(list_, source_, indent=4)
-            source_.close()
         logging.info('Done writing data to the file.')
         return target_
 
@@ -178,8 +180,9 @@ class JsonHelper(DataHelper):
                 elif isinstance(unit, tuple):
                     unit = cast_tuple(unit, current_name, current_value, current_type, field_props['metadata'])
             except ValueError:
-                logging.error('Can not define the type of the agent.')
-                raise ValueError('Undefined type of property')
+                msg = 'Undefined type of the property'
+                logging.error(msg)
+                raise ValueError(msg)
             return unit
 
         for field in self._schema['fields']:
@@ -204,9 +207,10 @@ class JsonHelper(DataHelper):
         elif len(mode_list) == 0:
             msg = 'Nothing to filter.'
             logging.warning(msg)
-            return None
+            target = []
         else:
             for item in mode_list:
+                # Validate input data for age field
                 if not isinstance(item['value'], int):
                     msg = 'Input value must be in Integer format.'
                     logging.error(msg)
@@ -215,6 +219,7 @@ class JsonHelper(DataHelper):
                     msg = 'Input value must be positive number'
                     logging.error(msg)
                     raise exceptions.NotAvailableValueError(msg)
+                # Filter data every single mode in list.
                 if item['mode'] == ConditionEnum.EQUAL.value:
                     target = [i for i in target if self.validator.get_attr_with_format(i, field_name) == item['value']]
                 elif item['mode'] == ConditionEnum.LESSER.value:
@@ -226,4 +231,4 @@ class JsonHelper(DataHelper):
                 elif item['mode'] == ConditionEnum.GREATER_EQUAL.value:
                     target = [i for i in target if self.validator.get_attr_with_format(i, field_name) >= item['value']]
         logging.info('Done filtering data.')
-        return target
+        return target if len(target) > 0 else None
