@@ -18,6 +18,9 @@ class TestCreateFunction(unittest.TestCase):
     @patch("json.load")
     @patch("builtins.open")
     def test_add_blank(self, m_open, m_load, m_dump):
+        m_open.return_value = MagicMock()
+        m_load.return_value = [{}]
+        m_dump.return_value = ''
         with self.assertRaises(NotFitSchemaError):
             ContactBook.add()
 
@@ -26,6 +29,9 @@ class TestCreateFunction(unittest.TestCase):
     @patch("builtins.open")
     def test_add_lack_props(self, m_open, m_load, m_dump):
         input_ = ('Minh', '0123456789', 'KMS', 'HCM')
+        m_open.return_value = MagicMock()
+        m_load.return_value = [{}]
+        m_dump.return_value = ''
         with self.assertRaises(NotFitSchemaError):
             ContactBook.add(*input_)
 
@@ -34,6 +40,9 @@ class TestCreateFunction(unittest.TestCase):
     @patch("builtins.open")
     def test_add_wrong_format(self, m_open, m_load, m_dump):
         input_ = (1, 1, 1, 1, 1)
+        m_open.return_value = MagicMock()
+        m_load.return_value = [{}]
+        m_dump.return_value = ''
         with self.assertRaises(NotFitSchemaError):
             ContactBook.add(*input_)
 
@@ -48,6 +57,7 @@ class TestCreateFunction(unittest.TestCase):
                   'age': '23'}
         m_open.return_value = MagicMock()
         m_load.return_value = [{}]
+        m_dump.return_value = ''
         input_ = ('Minh', '0123456789', 'KMS', 'HCM', 23)
         actual = ContactBook.add(*input_)
         assert actual['name'] == expect['name']
@@ -77,7 +87,9 @@ class TestFilterFunction(unittest.TestCase):
             ContactBook.age_filter(age_gte=5.9)
 
     @patch("json.load")
-    def test_filter_perfect(self, m_json):
+    @patch("builtins.open")
+    def test_filter_perfect(self, m_open, m_json):
+        m_open.return_value
         m_json.return_value = [{'name': 'Hieu',
                                 'phone': '0128493281',
                                 'company': 'Global',
