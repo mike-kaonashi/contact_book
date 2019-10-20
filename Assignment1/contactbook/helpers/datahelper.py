@@ -3,18 +3,19 @@ import sys
 import json
 import time
 import logging
-import datetime
+from datetime import datetime
 import collections
 from enum import Enum
 try:
     from errors import exceptions
     from validator import Validator
+    from caster import Caster
 except ModuleNotFoundError:
     from ..errors import exceptions
     from .validator import Validator
 
-_now = datetime.datetime.now()
-_today = datetime.datetime(_now.year, _now.month, _now.day)
+_now = datetime.now()
+_today = datetime(_now.year, _now.month, _now.day)
 _log_file = '{today}_record.log'.format(today=int(time.mktime(_today.timetuple())))
 _root_dir = os.path.join(os.path.dirname(sys.modules['__main__'].__file__), 'logs')
 _log_path = os.path.join(_root_dir, _log_file)
@@ -60,7 +61,7 @@ class JsonHelper(DataHelper):
     def __init__(self, source=None, schema=None):
         super().__init__(source)
         self._schema = None
-        if schema is not None:
+        if schema:
             try:
                 raw_ = open(schema, 'r')
                 self._schema = json.loads(raw_.read())
@@ -92,9 +93,10 @@ class JsonHelper(DataHelper):
             logging.error(msg)
             raise TypeError(msg)
         try:
-            if type_.value == TypeEnum.DICTIONARY.value:
+            print('Here')
+            if TypeEnum.DICTIONARY.__eq__(type_.value):
                 results = [self.apply_schema(item) for item in results]
-            elif type_.value == TypeEnum.NAMEDTUPLE.value:
+            elif TypeEnum.NAMEDTUPLE.__eq__(type_.value):
                 Object = collections.namedtuple('Object', self._headers)
                 results = [self.apply_schema(Object._make(item.values())) for item in results]
 
@@ -143,50 +145,14 @@ class JsonHelper(DataHelper):
         :param target_unit: Object on casting mode to fit the schema
         :return:
         """
-        def cast_dict(unit, prop_name, prop_value, prop_type, metadata=None):
-            """Cast properties of the dictionary unit fit the schema
-            """
-            if prop_type == "string":
-                unit[prop_name] = str(prop_value)
-            elif prop_type == "integer":
-                unit[prop_name] = int(prop_value)
-            elif prop_type == "float":
-                unit[prop_name] = float(prop_value)
-            elif prop_type == "date":
-                date_format = metadata['date_format']
-                unit[prop_name] = datetime.datetime.strptime(prop_value, date_format)
-
-        def cast_tuple(unit, prop_name, prop_value, prop_type, metadata=None):
-            """Cast properties of the namedtuple unit fit the schema
-            """
-            if prop_type == "string":
-                unit = unit._replace(**{prop_name: str(prop_value)})
-            elif prop_type == "integer":
-                unit = unit._replace(**{prop_name: int(prop_value)})
-            elif prop_type == "float":
-                unit = unit._replace(**{prop_name: float(prop_value)})
-            elif prop_type == "date":
-                date_format = metadata['date_format']
-                unit = unit._replace(**{prop_name: datetime.datetime.strptime(prop_value, date_format)})
-            return unit
-
-        def cast_type(field_props, unit):
-            current_value = self.validator.get_attr_with_format(unit, field_props['name'].lower())
-            try:
-                current_type = field_props['type']
-                current_name = field_props['name'].lower()
-                if isinstance(unit, dict):
-                    cast_dict(unit, current_name, current_value, current_type, field_props['metadata'])
-                elif isinstance(unit, tuple):
-                    unit = cast_tuple(unit, current_name, current_value, current_type, field_props['metadata'])
-            except ValueError:
-                msg = 'Undefined type of the property'
-                logging.error(msg)
-                raise ValueError(msg)
-            return unit
-
+        data_caster = Caster()
+        
         for field in self._schema['fields']:
-            target_unit = cast_type(field, target_unit)
+            if field['metadata']:
+                data_caster.set_metadata(field['metadata'])
+            else:
+                data_caster.set_metadata(None)
+            target_unit = data_caster.cast_type(field, target_unit)
         return target_unit
 
     def filter_data(self, target, field_name, keyword=None, mode_list=None):
@@ -220,15 +186,15 @@ class JsonHelper(DataHelper):
                     logging.error(msg)
                     raise exceptions.NotAvailableValueError(msg)
                 # Filter data every single mode in list.
-                if item['mode'] == ConditionEnum.EQUAL.value:
+                if ConditionEnum.EQUAL.__eq__(item['mode']):
                     target = [i for i in target if self.validator.get_attr_with_format(i, field_name) == item['value']]
-                elif item['mode'] == ConditionEnum.LESSER.value:
+                elif ConditionEnum.LESSER.__eq__(item['mode']):
                     target = [i for i in target if self.validator.get_attr_with_format(i, field_name) < item['value']]
-                elif item['mode'] == ConditionEnum.LESSER_EQUAL.value:
+                elif ConditionEnum.LESSER_EQUAL.__eq__(item['mode']):
                     target = [i for i in target if self.validator.get_attr_with_format(i, field_name) <= item['value']]
-                elif item['mode'] == ConditionEnum.GREATER.value:
+                elif ConditionEnum.GREATER.__eq__(item['mode']):
                     target = [i for i in target if self.validator.get_attr_with_format(i, field_name) > item['value']]
-                elif item['mode'] == ConditionEnum.GREATER_EQUAL.value:
+                elif ConditionEnum.GREATER_EQUAL.__eq__(item['mode']):
                     target = [i for i in target if self.validator.get_attr_with_format(i, field_name) >= item['value']]
         logging.info('Done filtering data.')
         return target if len(target) > 0 else None

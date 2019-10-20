@@ -29,7 +29,7 @@ class Validator(object):
             value = self.get_attr_with_format(obj, name)
             if len(str(value)) == 0 and nullable is False:
                 return False
-            if type_ == TypeEnum.STRING.value:
+            if TypeEnum.STRING.__eq__(type_):
                 if not isinstance(value, str):
                     return False
                 if 'min' in metadata.keys():
@@ -38,7 +38,7 @@ class Validator(object):
                 if 'max' in metadata.keys():
                     if len(value) > int(metadata['max']):
                         return False
-            elif type_ == TypeEnum.INTEGER.value:
+            elif TypeEnum.INTEGER.__eq__(type_):
                 if not isinstance(value, int):
                     return False
                 if 'min' in metadata.keys():
@@ -47,7 +47,7 @@ class Validator(object):
                 if 'max' in metadata.keys():
                     if int(value) > int(metadata['max']):
                         return False
-            elif type_ == TypeEnum.DOUBLE.value or type_ == TypeEnum.FLOAT.value:
+            elif TypeEnum.DOUBLE.__eq__(type_) or TypeEnum.FLOAT.__eq__(type_):
                 if not isinstance(value, float):
                     return False
                 if 'min' in metadata.keys():
