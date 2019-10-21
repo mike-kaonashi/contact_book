@@ -48,4 +48,3 @@ def age_filter(age=None, age_gt=None, age_gte=None, age_lt=None, age_lte=None):
     return data_helper.filter_data(list_, 'age',
                                    keyword=None,
                                    mode_list=mode_list)
-
