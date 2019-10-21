@@ -3,14 +3,6 @@ from contactbook.helpers import get_attr_with_format, casters
 from datetime import datetime
 
 
-class TypeEnum(Enum):
-    STRING = 'string'
-    INTEGER = 'integer'
-    FLOAT = 'float'
-    DOUBLE = 'double'
-    DATE = 'date'
-
-
 class Metadata:
     def __init__(self, metadata):
         self.metadata = metadata

@@ -49,7 +49,3 @@ def age_filter(age=None, age_gt=None, age_gte=None, age_lt=None, age_lte=None):
                                    keyword=None,
                                    mode_list=mode_list)
 
-
-print(list())
-print(search('name', 'in'))
-print(age_filter())
