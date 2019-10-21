@@ -13,8 +13,7 @@ def list():
 def search(field, param):
     list_ = list()
     return data_helper.filter_data(list_, field,
-                                   keyword=param,
-                                   mode_list=None)
+                                   keyword=param)
 
 
 def age_filter(age=None, age_gt=None, age_gte=None, age_lt=None, age_lte=None):
@@ -46,5 +45,4 @@ def age_filter(age=None, age_gt=None, age_gte=None, age_lt=None, age_lte=None):
             'value': age_lt
         })
     return data_helper.filter_data(list_, 'age',
-                                   keyword=None,
                                    mode_list=mode_list)
