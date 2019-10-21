@@ -6,13 +6,10 @@ import logging
 from datetime import datetime
 import collections
 from enum import Enum
-try:
-    from errors import exceptions
-    from validator import Validator
-    from caster import Caster
-except ModuleNotFoundError:
-    from ..errors import exceptions
-    from .validator import Validator
+from contactbook.helpers.caster import Caster
+from contactbook.errors import exceptions
+from contactbook.helpers.validator import Validator
+from contactbook.helpers import get_attr_with_format
 
 _now = datetime.now()
 _today = datetime(_now.year, _now.month, _now.day)
@@ -31,26 +28,58 @@ class TypeEnum(Enum):
     NOTDEFINED = -1
 
 
-class ConditionEnum(Enum):
-    EQUAL = '='
-    GREATER = '>'
-    GREATER_EQUAL = '>='
-    LESSER = '<'
-    LESSER_EQUAL = '<='
+class ConditionHelper(object):
+    def __init__(self, item):
+        self.item = item
+
+    def __eq__(self, other):
+        if isinstance(other, int):
+            return self.item == other
+        return False
+
+    def __lt__(self, other):
+        if isinstance(other, int):
+            return self.item < other
+        return False
+
+    def __le__(self, other):
+        if isinstance(other, int):
+            return self.item <= other
+        return False
+
+    def __gt__(self, other):
+        if isinstance(other, int):
+            return self.item > other
+        return False
+
+    def __ge__(self, other):
+        if isinstance(other, int):
+            return self.item >= other
+        return False
+
+    def compare(self, other, condition):
+        conditions = {
+            "=": self.__eq__(other),
+            ">": self.__gt__(other),
+            ">=": self.__ge__(other),
+            "<": self.__lt__(other),
+            "<=": self.__le__(other)
+        }
+        return conditions.get(condition)
 
 
-class DataHelper:
+class DataHelper(object):
     def __init__(self, source=None):
         super()
         self._data_source = source
         self.validator = Validator()
 
     def read_data(self, type_):
-        msg = '.read_data() need to be override'
+        msg = ".read_data() need to be override"
         raise NotImplementedError(msg)
 
     def write_data(self, target):
-        msg = '.write_data() need to be override'
+        msg = ".write_data() need to be override"
         raise NotImplementedError(msg)
 
 
@@ -66,7 +95,7 @@ class JsonHelper(DataHelper):
                 raw_ = open(schema, 'r')
                 self._schema = json.loads(raw_.read())
             except (FileExistsError, FileNotFoundError):
-                msg = 'File does not exist or not found'
+                msg = "File does not exist or not found"
                 logging.error(msg)
                 raise exceptions.NotAvailableFileError(msg)
 
@@ -79,7 +108,7 @@ class JsonHelper(DataHelper):
         :param type_: Convert data from json into pre-defined type
         :return:
         """
-        logging.info('Start reading data from file...')
+        logging.info("Start reading data from file...")
         try:
             source_ = open(self._data_source, 'r')
         except (FileExistsError, FileNotFoundError):
@@ -89,23 +118,21 @@ class JsonHelper(DataHelper):
         try:
             results = json.load(source_)
         except json.decoder.JSONDecodeError:
-            msg = 'The file not in Json format or empty file'
+            msg = "The file not in Json format or empty file"
             logging.error(msg)
             raise TypeError(msg)
         try:
-            print('Here')
-            if TypeEnum.DICTIONARY.__eq__(type_.value):
+            if TypeEnum.DICTIONARY is type_:
                 results = [self.apply_schema(item) for item in results]
-            elif TypeEnum.NAMEDTUPLE.__eq__(type_.value):
+            elif TypeEnum.NAMEDTUPLE is type_:
                 Object = collections.namedtuple('Object', self._headers)
                 results = [self.apply_schema(Object._make(item.values())) for item in results]
-
         except Exception:
-            msg = 'The data does not fit with the pre-defined schema.'
-            logging.error('Data does not fit the schema.')
+            msg = "The data does not fit with the pre-defined schema."
+            logging.error(msg)
             raise exceptions.NotFitSchemaError(msg)
         source_.close()
-        logging.info('Done reading data.')
+        logging.info("Done reading data.")
         return results
 
     def write_data(self, target):
@@ -115,9 +142,9 @@ class JsonHelper(DataHelper):
         :return:
         """
         list_ = self.read_data(type_=TypeEnum.NOTDEFINED)
-        logging.info('Start writing data to the file...')
+        logging.info("Start writing data to the file...")
         if len(self._headers) != len(target):
-            msg = 'The data does not fit the schema.'
+            msg = "The data does not fit the schema."
             logging.error(msg)
             raise exceptions.NotFitSchemaError(msg)
         else:
@@ -126,7 +153,7 @@ class JsonHelper(DataHelper):
                 target_ = dict(zip(self._headers, [str(item) for item in target]))
                 list_.append(target_)
             else:
-                msg = 'The data does not fit the schema.'
+                msg = "The data does not fit the schema."
                 logging.error(msg)
                 raise exceptions.NotFitSchemaError(msg)
             try:
@@ -134,10 +161,10 @@ class JsonHelper(DataHelper):
                 json.dump(list_, source_, indent=4)
                 source_.close()
             except (FileExistsError, FileNotFoundError):
-                msg = 'The file does not exist or not found'
+                msg = "The file does not exist or not found"
                 logging.error(msg)
                 raise exceptions.NotAvailableFileError(msg)
-        logging.info('Done writing data to the file.')
+        logging.info("Done writing data to the file.")
         return target_
 
     def apply_schema(self, target_unit):
@@ -146,7 +173,7 @@ class JsonHelper(DataHelper):
         :return:
         """
         data_caster = Caster()
-        
+
         for field in self._schema['fields']:
             if field['metadata']:
                 data_caster.set_metadata(field['metadata'])
@@ -163,38 +190,32 @@ class JsonHelper(DataHelper):
         :param mode_list: Mode condition for range filter
         :return:
         """
-        logging.info('Start filtering data...')
+        logging.info("Start filtering data...")
         if field_name not in self._headers:
             msg = "Field name does not exist in the headers"
             logging.error(msg)
             raise exceptions.NotExistFieldNameError(msg)
         if mode_list is None:
-            target = [item for item in target if keyword in self.validator.get_attr_with_format(item, field_name)]
+            # Search by field name case
+            target = [item for item in target if keyword in get_attr_with_format(item, field_name)]
         elif len(mode_list) == 0:
-            msg = 'Nothing to filter.'
+            msg = "Nothing to filter."
             logging.warning(msg)
             target = []
         else:
+            # Filter by age case
             for item in mode_list:
                 # Validate input data for age field
                 if not isinstance(item['value'], int):
-                    msg = 'Input value must be in Integer format.'
+                    msg = "Input value must be in Integer format."
                     logging.error(msg)
                     raise exceptions.NotAvailableValueError(msg)
                 if item['value'] < 0:
-                    msg = 'Input value must be positive number'
+                    msg = "Input value must be positive number"
                     logging.error(msg)
                     raise exceptions.NotAvailableValueError(msg)
                 # Filter data every single mode in list.
-                if ConditionEnum.EQUAL.__eq__(item['mode']):
-                    target = [i for i in target if self.validator.get_attr_with_format(i, field_name) == item['value']]
-                elif ConditionEnum.LESSER.__eq__(item['mode']):
-                    target = [i for i in target if self.validator.get_attr_with_format(i, field_name) < item['value']]
-                elif ConditionEnum.LESSER_EQUAL.__eq__(item['mode']):
-                    target = [i for i in target if self.validator.get_attr_with_format(i, field_name) <= item['value']]
-                elif ConditionEnum.GREATER.__eq__(item['mode']):
-                    target = [i for i in target if self.validator.get_attr_with_format(i, field_name) > item['value']]
-                elif ConditionEnum.GREATER_EQUAL.__eq__(item['mode']):
-                    target = [i for i in target if self.validator.get_attr_with_format(i, field_name) >= item['value']]
-        logging.info('Done filtering data.')
+                target = list(filter(lambda x: ConditionHelper(
+                        get_attr_with_format(x, field_name)).compare(item['value'], item['mode']), target))
+        logging.info("Done filtering data.")
         return target if len(target) > 0 else None

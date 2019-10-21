@@ -2,7 +2,6 @@ import unittest
 import collections
 from unittest.mock import Mock, MagicMock, mock_open, patch
 from contactbook import ContactBook
-from contactbook.helpers.datahelper import TypeEnum
 from contactbook.errors.exceptions \
     import NotAvailableFileError, NotInJsonFormatError, \
     NotFitSchemaError, NullFilterConditionError, \
@@ -89,7 +88,7 @@ class TestFilterFunction(unittest.TestCase):
     @patch("json.load")
     @patch("builtins.open")
     def test_filter_perfect(self, m_open, m_json):
-        m_open.return_value
+        m_open.return_value = MagicMock()
         m_json.return_value = [{'name': 'Hieu',
                                 'phone': '0128493281',
                                 'company': 'Global',

@@ -38,3 +38,9 @@ class NotAvailableValueError(Exception):
     """Data constraints not include negative number or double/float
     """
     pass
+
+
+class NotVailableConditionError(Exception):
+    """Condition can not be identified
+    """
+    pass
