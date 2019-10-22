@@ -197,7 +197,7 @@ class JsonHelper(DataHelper):
             raise exceptions.NotExistFieldNameError(msg)
         if mode_list is None:
             # Search by field name case
-            target = [item for item in target if keyword in get_attr_with_format(item, field_name)]
+            target = [item for item in target if keyword in str(get_attr_with_format(item, field_name))]
         elif len(mode_list) == 0:
             msg = "Nothing to filter."
             logging.warning(msg)
